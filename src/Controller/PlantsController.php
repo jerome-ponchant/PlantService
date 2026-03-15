@@ -22,7 +22,7 @@ use App\Repository\PlantRepository;
 use App\Entity\Plant;
 // src/Controller/PlantQuizController.php
 
-#[Route('/quizz/randomPlant', name: 'app_quizz_randomPlant', methods: ['GET'])]
+#[Route('/api/quizz/randomPlant', name: 'app_quizz_randomPlant', methods: ['GET'])]
 class PlantsController extends AbstractController
 {
 

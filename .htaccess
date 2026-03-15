@@ -1,1 +1,14 @@
-Options -Indexes
+RewriteEngine On
+
+# Si le fichier existe physiquement (ex: une image), on le sert directement
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# 1. Rediriger vers Symfony UNIQUEMENT si ça commence par /api
+# ET que ce n'est pas un fichier réel
+RewriteCond %{REQUEST_URI} ^/api [NC]
+RewriteRule ^api/(.*)$ public/index.php [QSA,L]
+
+# 2. Sinon, envoyer vers Angular
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [L]
