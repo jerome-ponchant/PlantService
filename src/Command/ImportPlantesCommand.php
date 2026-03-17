@@ -45,7 +45,7 @@ class ImportPlantesCommand extends Command
 
             $finder = new Finder();
             // Remplace par ton chemin Windows (attention aux antislashes doubles)
-            $finder->files()->in("C:/Documents/La Cadène/Reconnaissance plantes/Planches")->name(['*.doc', '*.docx']);
+            $finder->files()->in("C:/Documents/La Cadène/Reconnaissance plantes/Planches sans noms")->name(['*.doc', '*.docx']);
 
             if (!$finder->hasResults()) {
                 $output->writeln('Aucun fichier trouvé.');
