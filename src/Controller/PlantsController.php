@@ -22,13 +22,18 @@ use App\Repository\PlantRepository;
 use App\Entity\Plant;
 // src/Controller/PlantQuizController.php
 
-#[Route('/api/quizz/randomPlant', name: 'app_quizz_randomPlant', methods: ['GET'])]
 class PlantsController extends AbstractController
 {
 
-    public function __invoke(PlantRepository $repo): JsonResponse
+    public function __construct(
+        private PlantRepository $repo
+    ) {}
+
+
+    #[Route('/api/quizz/randomPlant', name: 'app_quizz_randomPlant', methods: ['GET'])]
+    public function randomPlant(): JsonResponse
     {
-        $plant = $repo->findRandomOne();
+        $plant = $this->repo->findRandomOne();
 
         if (!$plant) {
             return $this->json(['error' => 'Aucune plante en base'], 404);
@@ -41,4 +46,11 @@ class PlantsController extends AbstractController
             'imageUrl' => $plant->getImageUrl(),
         ]);
     }
+
+    #[Route('/api/quizz/randomPlant/{n}', name: 'app_quizz_manyrandomPlant', methods: ['GET'])]
+    public function findRandomPlant(int $n){
+         $plants = $this->repo->findRandomMany($n);
+         return $this->json($plants);
+    }
+
 }
