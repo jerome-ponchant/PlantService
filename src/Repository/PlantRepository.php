@@ -61,28 +61,46 @@ class PlantRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-    //    /**
-    //     * @return Plant[] Returns an array of Plant objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
 
-    //    public function findOneBySomeField($value): ?Plant
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+ * Retourne un nombre défini de plantes au hasard,
+ * en excluant une liste d'identifiants spécifiques.
+ * * @param int $limit Le nombre de résultats souhaités
+ * @param int[] $excludeIds Les IDs à ne pas inclure dans la sélection
+ * @return Plant[]
+ */
+public function findRandomManyExcluded(int $limit, array $excludeIds): array
+{
+    $qb = $this->createQueryBuilder('p');
+
+    // On exclut les IDs seulement si le tableau n'est pas vide
+    if (!empty($excludeIds)) {
+        $qb->andWhere('p.id NOT IN (:ids)')
+           ->setParameter('ids', $excludeIds);
+    }
+
+    // 1. On compte d'abord combien d'entrées répondent au critère d'exclusion
+    // On clone le QueryBuilder pour ne pas polluer la requête finale
+    $countQb = clone $qb;
+    $total = $countQb->select('COUNT(p.id)')
+                     ->getQuery()
+                     ->getSingleScalarResult();
+
+    if ($total == 0) {
+        return [];
+    }
+
+    // 2. On ajuste la limite si elle est supérieure au nombre de lignes disponibles
+    $effectiveLimit = min($limit, $total);
+
+    // 3. On calcule un offset aléatoire sécurisé
+    $maxOffset = max(0, $total - $effectiveLimit);
+    $offset = rand(0, $maxOffset);
+
+    // 4. On exécute la requête finale avec le saut de lignes
+    return $qb->setFirstResult($offset)
+              ->setMaxResults($effectiveLimit)
+              ->getQuery()
+              ->getResult();
+}
 }
