@@ -11,7 +11,7 @@ nelmio_cors:
         '^/api/': # API Platform
             allow_origin: ['*']
             allow_headers: ['*']
-            allow_methods: ['POST', 'PUT', 'GET', 'DELETE']
+            allow_methods: ['POST', 'PUT', 'GET', 'DELETE', 'PATCH', 'OPTIONS']
         '^/quizz/': # Ton contrôleur personnalisé
             allow_origin: ['*']
             allow_headers: ['*']
