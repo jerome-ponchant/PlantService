@@ -102,9 +102,17 @@ public function buildOptions(Request $request): JsonResponse
 
     shuffle($options);
 
+    $formatData = function($plant) {
+        return [
+            'id' => $plant->getId(),
+            'name' => $plant->getName(),
+            'imageUrl' => $plant->getImageUrl(),
+        ];
+    };
+
     return $this->json([
-        'target' => $target,
-        'options' => $options
+        'target' => $formatData($target),
+        'options' => array_map($formatData, $options)
     ]);
 }
 // --- PARTIE CRUD CATEGORY ---

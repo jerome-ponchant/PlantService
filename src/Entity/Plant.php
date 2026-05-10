@@ -14,11 +14,15 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\HttpFoundation\File\File;
 
 #[ORM\Entity(repositoryClass: PlantRepository::class)]
 #[ApiResource()]
 class Plant
 {
+
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -27,8 +31,14 @@ class Plant
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $imageUrl = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageUrl = null; // Le chemin stocké en BDD
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+
+    // Getters et Setters indispensables
 
     /**
      * @var Collection<int, Category>
@@ -99,5 +109,10 @@ class Plant
         $this->categories->removeElement($category);
 
         return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
     }
 }
