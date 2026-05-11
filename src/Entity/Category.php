@@ -9,9 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
-#[ApiResource(
-    formats: ['json', 'jsonld'] // Autorise explicitement le JSON classique[cite: 1]
-)]
+#[ApiResource()]
 class Category
 {
     #[ORM\Id]

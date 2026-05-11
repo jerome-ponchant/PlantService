@@ -18,7 +18,11 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use Symfony\Component\HttpFoundation\File\File;
 
 #[ORM\Entity(repositoryClass: PlantRepository::class)]
-#[ApiResource()]
+#[ApiResource(
+    paginationEnabled: true,
+    paginationItemsPerPage: 10, // Optionnel : pour tester la pagination plus facilement
+    order: ['id' => 'DESC']
+)]
 class Plant
 {
 
