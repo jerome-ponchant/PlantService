@@ -66,37 +66,44 @@ public function buildOptions(Request $request): JsonResponse
     // On récupère les données envoyées en JSON par Angular
     $data = json_decode($request->getContent(), true);
     $failedIds = $data['failedIds'] ?? [];
+    $categoryIds = $data['categoryIds'] ?? [];
 
     // 1. Détermination de la cible (80% échec / 20% hasard)
     $target = null;
     if (rand(1, 10) <= 8 && !empty($failedIds)) {
         $randomKey = array_rand($failedIds);
-        $target = $this->repo->find($failedIds[$randomKey]);
+        $target =$this->repo->findRandomOneFiltered($failedIds, $categoryIds);
     }
 
     // Si pas de cible (2/10 ou liste vide), on en prend une au hasard
     if (!$target) {
-        $target = $this->repo->findRandomOne();
+        $target =$this->repo->findRandomOneFiltered([], $categoryIds);;
+    }
+
+    // Si la base est vide ou aucune plante ne correspond aux critères
+    if (!$target) {
+        return $this->json(['error' => 'Aucune plante ne correspond aux catégories sélectionnées'], 404);
     }
 
     // 2. Construction des options
     // 2.1 La bonne réponse
     $options = [$target];
 
-    // 2.2 Deux autres plantes en échec (exclure la cible)
-    $otherFailedIds = array_diff($failedIds, [$target->getId()]);
-    if (!empty($otherFailedIds)) {
-        $randomKeys = (array) array_rand($otherFailedIds, min(2, count($otherFailedIds)));
-        foreach ($randomKeys as $key) {
-            $options[] = $this->repo->find($otherFailedIds[$key]);
-        }
+// 2.2 Essayer de compléter avec d'autres plantes en échec qui respectent les catégories
+$otherFailedIds = array_diff($failedIds, [$target->getId()]);
+if (!empty($otherFailedIds)) {
+    $compatibleFailedOptions = $this->repo->findRandomManyFiltered($otherFailedIds, $categoryIds, 2);
+    foreach ($compatibleFailedOptions as $failedOpt) {
+        $options[] = $failedOpt;
     }
+}
 
     // 2.3 Compléter avec du hasard jusqu'à 6 options
     $excludeIds = array_map(fn($p) => $p->getId(), $options);
     $needed = 6 - count($options);
+
     if ($needed > 0) {
-        $randoms = $this->repo->findRandomManyExcluded($needed, $excludeIds);
+        $randoms = $this->repo->findRandomManyFiltered([], $categoryIds, $needed, $excludeIds);
         $options = array_merge($options, $randoms);
     }
 
@@ -114,5 +121,5 @@ public function buildOptions(Request $request): JsonResponse
         'target' => $formatData($target),
         'options' => array_map($formatData, $options)
     ]);
-}
+    }
 }

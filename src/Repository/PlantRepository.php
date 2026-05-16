@@ -103,4 +103,49 @@ public function findRandomManyExcluded(int $limit, array $excludeIds): array
               ->getQuery()
               ->getResult();
 }
+
+/**
+ * Récupère des plantes aléatoires filtrées par catégories, exclusions et/ou IDs spécifiques.
+ */
+public function findRandomManyFiltered(array $specificIds = [], array $categoryIds = [], int $limit = 1, array $excludeIds = []): array
+{
+    $qb = $this->createQueryBuilder('p');
+
+    // 1. Filtrage par catégories (jointure ManyToMany ou ManyToOne selon votre modèle)
+    if (!empty($categoryIds)) {
+        $qb->innerJoin('p.categories', 'c') // Ajustez 'categories' selon le nom de la propriété dans l'entité Plant
+           ->andWhere('c.id IN (:categoryIds)')
+           ->setParameter('categoryIds', $categoryIds);
+    }
+
+    // 2. Si on cherche parmi des plantes spécifiques (ex: failedIds)
+    if (!empty($specificIds)) {
+        $qb->andWhere('p.id IN (:specificIds)')
+           ->setParameter('specificIds', $specificIds);
+    }
+
+    // 3. Exclusion des plantes déjà sélectionnées
+    if (!empty($excludeIds)) {
+        $qb->andWhere('p.id NOT IN (:excludeIds)')
+           ->setParameter('excludeIds', $excludeIds);
+    }
+
+    $results = $qb->getQuery()->getResult();
+
+    if (empty($results)) {
+        return [];
+    }
+
+    // Mélange des résultats en mémoire pour l'aspect aléatoire
+    shuffle($results);
+
+    return array_slice($results, 0, $limit);
+}
+
+public function findRandomOneFiltered(array $specificIds = [], array $categoryIds = []): ?Plant
+{
+    $res = $this->findRandomManyFiltered($specificIds, $categoryIds, 1);
+    return !empty($res) ? $res[0] : null;
+}
+
 }
