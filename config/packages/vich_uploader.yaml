@@ -1,9 +1,8 @@
-# config/packages/vich_uploader.yaml
 vich_uploader:
-    db_driver: orm  # <--- Ajoutez cette ligne (obligatoire)
+    db_driver: orm
 
-    mappings:
-        plant_images:
-            uri_prefix: /uploads/plants
-            upload_destination: '%kernel.project_dir%/public/uploads/plants'
-            namer: App\Naming\PlantNamer # Ou Vich\UploaderBundle\Naming\SmartUniqueNamer
+    #mappings:
+    #    products:
+    #        uri_prefix: /images/products
+    #        upload_destination: '%kernel.project_dir%/public/images/products'
+    #        namer: Vich\UploaderBundle\Naming\SmartUniqueNamer

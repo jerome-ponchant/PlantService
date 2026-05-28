@@ -130,7 +130,11 @@ public function findRandomManyFiltered(array $specificIds = [], array $categoryI
            ->setParameter('excludeIds', $excludeIds);
     }
 
-    $results = $qb->getQuery()->getResult();
+    $query = $qb->getQuery();
+    $query->expireResultCache(true);
+    $query->setHint(\Doctrine\ORM\Query::HINT_REFRESH, true);
+
+    $results = $query->getResult();
 
     if (empty($results)) {
         return [];

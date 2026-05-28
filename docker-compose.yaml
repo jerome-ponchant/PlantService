@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  php-api:
+    build: . # Dit à Docker de lire le 'Dockerfile' du dossier courant
+    container_name: quizz_php_api
+    volumes:
+      - .:/var/www/api
+      # Volume magique : il lie le cache de Composer du conteneur à un stockage Docker persistant
+      - composer-cache:/root/.composer/cache
+    working_dir: /var/www/
+    ports:
+      - "8000:80"
+      - "8080:6080"   # Pour accéder à l'interface graphique noVNC
+    # Ligne magique à ajouter :
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+
+
+
+volumes:
+  composer-cache: # Déclaration du volume persistant pour le cache
+
+
+
+
+

@@ -1,8 +1,13 @@
-DirectoryIndex index.php
-
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    # Si ce n'est pas un fichier réel, on envoie tout à index.php
-    RewriteCond %{REQUEST_FILENAME} !-f
+
+    # Définir la base si nécessaire
+    RewriteBase /api/public/
+
+    # Si le fichier ou dossier demandé existe physiquement, on le sert directement
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # Sinon, on envoie tout au contrôleur frontal de Symfony
     RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>

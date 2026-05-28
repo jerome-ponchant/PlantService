@@ -119,7 +119,8 @@ if (!empty($otherFailedIds)) {
 
     return $this->json([
         'target' => $formatData($target),
-        'options' => array_map($formatData, $options)
+        'options' => array_map($formatData, $options),
+        'generated_at' => microtime(true)
     ]);
     }
 }

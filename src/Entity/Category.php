@@ -9,7 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
-#[ApiResource()]
+#[ApiResource(paginationEnabled: false)]
 class Category
 {
     #[ORM\Id]
@@ -26,7 +26,7 @@ class Category
     /**
      * @var Collection<int, self>
      */
-    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent')]
+    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent',cascade: ['remove'], orphanRemoval: true)]
     private Collection $no;
 
     /**

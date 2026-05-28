@@ -16,6 +16,9 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use Symfony\Component\HttpFoundation\File\File;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use App\Filter\PlantSearchFilter;
 
 #[ORM\Entity(repositoryClass: PlantRepository::class)]
 #[ApiResource(
@@ -23,6 +26,7 @@ use Symfony\Component\HttpFoundation\File\File;
     paginationItemsPerPage: 10, // Optionnel : pour tester la pagination plus facilement
     order: ['id' => 'DESC']
 )]
+#[ApiFilter(PlantSearchFilter::class)]
 class Plant
 {
 
@@ -49,6 +53,9 @@ class Plant
      */
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'plants')]
     private Collection $categories;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $commonName = null;
 
     public function __construct()
     {
@@ -118,5 +125,17 @@ class Plant
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    public function getCommonName(): ?string
+    {
+        return $this->commonName;
+    }
+
+    public function setCommonName(?string $commonName): static
+    {
+        $this->commonName = $commonName;
+
+        return $this;
     }
 }
