@@ -35,10 +35,19 @@ class Category
     #[ORM\ManyToMany(targetEntity: Plant::class, mappedBy: 'categories')]
     private Collection $plants;
 
+/**
+     * Ensemble des autres catégories que cette catégorie implique directement.
+     * @var Collection<int, self>
+     */
+    #[ORM\ManyToMany(targetEntity: self::class)]
+    #[ORM\JoinTable(name: 'category_implications')]
+    private Collection $impliedCategories;
+
     public function __construct()
     {
         $this->no = new ArrayCollection();
         $this->plants = new ArrayCollection();
+        $this->impliedCategories = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -126,4 +135,29 @@ class Category
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, self>
+     */
+    public function getImpliedCategories(): Collection
+    {
+        return $this->impliedCategories;
+    }
+
+    public function addImpliedCategory(self $category): static
+    {
+        if (!$this->impliedCategories->contains($category)) {
+            $this->impliedCategories->add($category);
+        }
+
+        return $this;
+    }
+
+    public function removeImpliedCategory(self $category): static
+    {
+        $this->impliedCategories->removeElement($category);
+
+        return $this;
+    }
+
 }

@@ -48,7 +48,7 @@ class PlantsController extends AbstractController
         return $this->json([
             'id' => $plant->getId(),
             'name' => $plant->getName(),
-            'imageUrl' => $plant->getImageUrl(),
+            'images' => $plant->getImages(),
         ]);
     }
 
@@ -109,11 +109,24 @@ if (!empty($otherFailedIds)) {
 
     shuffle($options);
 
+
+
+
     $formatData = function($plant) {
+        $imagesData = [];
+
+        foreach ($plant->getImages() as $image) {
+            $imagesData[] = [
+                'id' => $image->getId(),
+                'url' => $image->getUrl(),
+                'position' => $image->getPosition(),
+            ];
+        }
+
         return [
             'id' => $plant->getId(),
             'name' => $plant->getName(),
-            'imageUrl' => $plant->getImageUrl(),
+            'images' => $imagesData,
         ];
     };
 

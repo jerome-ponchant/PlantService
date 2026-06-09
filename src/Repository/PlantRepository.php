@@ -146,10 +146,52 @@ public function findRandomManyFiltered(array $specificIds = [], array $categoryI
     return array_slice($results, 0, $limit);
 }
 
-public function findRandomOneFiltered(array $specificIds = [], array $categoryIds = []): ?Plant
+public function findRandomOneFiltered(array $specificIds = [], array $categoryIds = [], array $excludeIds = []): ?Plant
 {
-    $res = $this->findRandomManyFiltered($specificIds, $categoryIds, 1);
-    return !empty($res) ? $res[0] : null;
+    // 1. On compte d'abord combien de plantes correspondent à nos critères de catégories
+    $countQb = $this->createQueryBuilder('p')
+        ->select('COUNT(DISTINCT p.id)');
+
+    if (!empty($categoryIds)) {
+        $countQb->innerJoin('p.categories', 'c')
+                ->andWhere('c.id IN (:categoryIds)')
+                ->setParameter('categoryIds', $categoryIds);
+    }
+    if (!empty($specificIds)) {
+        $countQb->andWhere('p.id IN (:specificIds)')->setParameter('specificIds', $specificIds);
+    }
+    if (!empty($excludeIds)) {
+        $countQb->andWhere('p.id NOT IN (:excludeIds)')->setParameter('excludeIds', $excludeIds);
+    }
+
+    $count = (int) $countQb->getQuery()->getSingleScalarResult();
+
+    if ($count === 0) {
+        return null;
+    }
+
+    // 2. On génère un décalage (offset) aléatoire entre 0 et (total - 1)
+    $randomOffset = rand(0, $count - 1);
+
+    // 3. On récupère la plante unique située à cet index aléatoire
+    $qb = $this->createQueryBuilder('p');
+
+    if (!empty($categoryIds)) {
+        $qb->innerJoin('p.categories', 'c')
+           ->andWhere('c.id IN (:categoryIds)')
+           ->setParameter('categoryIds', $categoryIds);
+    }
+    if (!empty($specificIds)) {
+        $qb->andWhere('p.id IN (:specificIds)')->setParameter('specificIds', $specificIds);
+    }
+    if (!empty($excludeIds)) {
+        $qb->andWhere('p.id NOT IN (:excludeIds)')->setParameter('excludeIds', $excludeIds);
+    }
+
+    return $qb->setFirstResult($randomOffset) // Saute un nombre de lignes au hasard
+              ->setMaxResults(1)             // N'en prend qu'une seule
+              ->getQuery()
+              ->getOneOrNullResult();
 }
 
 }

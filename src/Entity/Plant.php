@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use App\Controller\PlantsController;
 use App\Repository\PlantRepository;
@@ -19,29 +20,43 @@ use Symfony\Component\HttpFoundation\File\File;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use App\Filter\PlantSearchFilter;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 
 #[ORM\Entity(repositoryClass: PlantRepository::class)]
 #[ApiResource(
     paginationEnabled: true,
     paginationItemsPerPage: 10, // Optionnel : pour tester la pagination plus facilement
-    order: ['id' => 'DESC']
+    order: ['id' => 'DESC'],
+    operations: [
+        new Get(normalizationContext: ['groups' => ['plant:read']]),
+        new GetCollection(normalizationContext: ['groups' => ['plant:read']]),
+        new Patch(denormalizationContext: ['groups' => ['plant:write']]),
+        new Post(denormalizationContext: ['groups' => ['plant:write']]),
+        new Put(denormalizationContext: ['groups' => ['plant:write']]),
+        new Delete()
+    ]
 )]
 #[ApiFilter(PlantSearchFilter::class)]
 class Plant
 {
 
-
+    #[Groups(['plant:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['plant:read'])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $imageUrl = null; // Le chemin stocké en BDD
+    #[Groups(['plant:read', 'plant:write'])]
+    #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'plant', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])] // <- C'est magique, Doctrine trie tout seul à la récupération
+    private Collection $images;
 
+    #[Groups(['plant:read'])]
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
@@ -51,15 +66,18 @@ class Plant
     /**
      * @var Collection<int, Category>
      */
-    #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'plants')]
+    #[Groups(['plant:read'])]
+     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'plants')]
     private Collection $categories;
 
+    #[Groups(['plant:read'])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $commonName = null;
 
     public function __construct()
     {
         $this->categories = new ArrayCollection();
+        $this->images = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -86,17 +104,6 @@ class Plant
         return $this;
     }
 
-    public function getImageUrl(): ?string
-    {
-        return $this->imageUrl;
-    }
-
-    public function setImageUrl(?string $imageUrl): static
-    {
-        $this->imageUrl = $imageUrl;
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, Category>
@@ -138,4 +145,35 @@ class Plant
 
         return $this;
     }
+
+/**
+     * @return Collection<int, Image>
+     */
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImage(Image $image): static
+    {
+        if (!$this->images->contains($image)) {
+            $this->images->add($image);
+            $image->setPlant($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImage(Image $image): static
+    {
+        if ($this->images->removeElement($image)) {
+            // Set the owning side to null (unless already changed)
+            if ($image->getPlant() === $this) {
+                $image->setPlant(null);
+            }
+        }
+
+        return $this;
+    }
+
 }
