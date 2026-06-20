@@ -47,7 +47,7 @@ class Plant
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(['plant:read'])]
+    #[Groups(['plant:read', 'plant:write'])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
@@ -56,29 +56,35 @@ class Plant
     #[ORM\OrderBy(['position' => 'ASC'])] // <- C'est magique, Doctrine trie tout seul à la récupération
     private Collection $images;
 
-    #[Groups(['plant:read'])]
+    #[Groups(['plant:read', 'plant:write'])]
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
 
-    // Getters et Setters indispensables
+
 
     /**
      * @var Collection<int, Category>
      */
-    #[Groups(['plant:read'])]
+    #[Groups(['plant:read', 'plant:write'])]
      #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'plants')]
     private Collection $categories;
 
-    #[Groups(['plant:read'])]
+    #[Groups(['plant:read', 'plant:write'])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $commonName = null;
+
+    #[Groups(['plant:read', 'plant:write'])]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $description = null;
 
     public function __construct()
     {
         $this->categories = new ArrayCollection();
         $this->images = new ArrayCollection();
     }
+
+    // Getters et Setters indispensables
 
     public function getId(): ?int
     {
@@ -172,6 +178,18 @@ class Plant
                 $image->setPlant(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
 
         return $this;
     }

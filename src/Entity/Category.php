@@ -9,7 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
-#[ApiResource(paginationEnabled: false)]
+#[ApiResource(paginationEnabled: false, order: ['name' => 'ASC'])]
 class Category
 {
     #[ORM\Id]
