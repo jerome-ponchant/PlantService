@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Controller;
-
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,6 +21,7 @@ class IdentifyController extends AbstractController
         $this->geminiApiKey = $geminiApiKey;
     }
 
+    #[Route('/api/identify', name: 'api_identify', methods: ['POST'], stateless: true)]
     public function __invoke(Request $request): JsonResponse
     {
         set_time_limit(120);
